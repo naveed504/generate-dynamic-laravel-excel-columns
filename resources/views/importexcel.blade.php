@@ -1,29 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <title>Bootstrap Example</title>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.slim.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-<body>
-
-<div class="container">
-  <h2>Import Excel File</h2>
-  <form action="{{route('importexcel')}}" method="post" enctype="multipart/form-data">
-      @csrf
-    <div class="form-group">
-      <label for="file">Excel File:</label>
-      <input type="file" class="form-control" placeholder="Select Excel File" name="excelfile">
-    </div>
-    
-    
-    <button type="submit" class="btn btn-primary">Submit</button>
-  </form>
+@extends('layouts.master')
+@section('content')
+<div class="container"> 
+  <div class="row" style="margin-top: 80px;">
+  <div class="col-md-6 offset-3">  
+    <form action="{{route('importexcel')}}" method="post" enctype="multipart/form-data" id="importexcel">
+        @csrf
+        <div class="custom-file">
+            <input type="file" name="excelfile" class="form-control input__box--wrapper custom-file-input"  >
+            <span class="custom-file-label" for="validatedCustomFile">Choose Excel File</span>
+        </div> 
+      <button type="submit" class="btn btn-primary" style="margin-top: 20px;">Submit</button>
+    </form>  
+  </div>
+  </div>
 </div>
-
-</body>
-</html>
+@endsection

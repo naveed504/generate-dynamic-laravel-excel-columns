@@ -18,4 +18,7 @@ Route::get('/', function () {
     return view('importexcel');
 });
 
-Route::post('import-excel',[ExcelFileController::class, 'importExcelFile'])->name('importexcel');
+/**
+ * Import Excel File Into DB
+ */
+Route::post('import-excel-files',[ExcelFileController::class, 'importExcelFile'])->name('importexcel');

@@ -6,47 +6,56 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\File as FileModel;
 use Maatwebsite\Excel\HeadingRowImport;
-use Maatwebsite\Excel\HeadingColumnImport;
 use App\Models\FileColumn;
 use App\Models\FileData;
 use Excel;
-
+use Exception;
+use SoftpersHelper;
 class ExcelFileController extends Controller
 {
     public function importExcelFile(Request $request)
     {
-        $columnheadings = (new HeadingRowImport)->toArray($request->excelfile);
+        try {
+            $columnNames = (new HeadingRowImport)->toArray($request->excelfile);        
 
-        $filePath =public_path('admin/excel/');
-        $fileName = time().'.'.$request->excelfile->clientExtension();
-        $request->excelfile->move($filePath, $fileName); 
-        $saveFile =FileModel::create([
-            'name' => $fileName
-        ]);
-
-             $lastcolumnid = [];
-        foreach($columnheadings[0] as $heading){
-            foreach($heading as $name){
-                $saveColumns =FileColumn::create([
-                    'name' => $name,
-                    'file_id' =>$saveFile->id    
-                ]);
-                array_push($lastcolumnid ,$saveColumns->id);
-            }           
-        }
-        ////above working fine
-        $fileData =Excel::toArray([],$filePath.$saveFile->name);
-       
-
-        foreach($fileData as $key=>$fdata){
-               unset($fdata[0]);
+            $filePath =storage_path('app/public/excelfiles/');
+            $saveExcelFile =SoftpersHelper::saveFile($request->excelfile,$filePath);  
+           
+            $saveFile =FileModel::create([
+                'name' => $saveExcelFile
+            ]);        
+            $lastcolumnid = [];        
+            foreach($columnNames[0] as $columns){
+                foreach($columns as $column){
+                    $saveColumn =FileColumn::create([
+                        'name' => $column,
+                        'file_id' =>$saveFile->id    
+                    ]);
+                    array_push($lastcolumnid ,$saveColumn->id);
+                }           
+            }
              
-               $first_elements = array_map(function($i) use($key) {
-                return $i[$key];
-            }, $fdata); 
-            dump($first_elements);
-            
+            $excelFileData =Excel::toArray([],$filePath.$saveFile->name);  
+               
+            foreach($excelFileData as $excelRows){
+                unset($excelRows[0]); //skip first row columns name
+                foreach($excelRows as $singleRow){                  
+                   foreach($singleRow as $key=>$singleRowValue){              
+                        FileData::create([
+                            'data' => $singleRowValue,
+                            'column_id' => $lastcolumnid[$key]
+                        ]); 
+                    }           
+                }                          
+            }
+            parent::successMessage("Excel File Imported Successfully");
+            return redirect()->back();
+        } catch(Exception $e) {
+            parent::dangerMessage("Something went Wrong File Does Not Imported");
+            parent::dangerMessage("Please Check File And Try Again");
+            return redirect()->back();
         }
+       
        
     }
 }
